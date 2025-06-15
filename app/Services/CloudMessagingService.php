@@ -2,11 +2,12 @@
 
 namespace App\Services;
 
-use App\Dto\NotificationDto;
+use App\Notifications\Messages\CloudMessagingMessage;
 use Exception;
 use Google\Client;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class CloudMessagingService
 {
@@ -50,7 +51,7 @@ class CloudMessagingService
      */
     private function getAccessToken(): string
     {
-        if (Cache::has('firebase-access-token')) {            
+        if (! Cache::has('firebase-access-token')) {            
             $client = new Client();
             $client->setAuthConfig(base_path($this->appConfigPath));
             $client->addScope($this->appScope);
@@ -58,7 +59,6 @@ class CloudMessagingService
             $token = $client->getAccessToken();
 
             Cache::set('firebase-access-token', $token['access_token'] ?? '', $token['expires_in'] ?? 0);
-
             return $token['access_token'] ?? '';
         }
 
@@ -68,12 +68,12 @@ class CloudMessagingService
     /**
      * Send Push Notification
      * 
-     * @param \App\Dto\NotificationDto
+     * @param \App\Notifications\Messages\CloudMessagingMessage $notification
      * @param string $fcmToken
      * 
-     * @return mixed
+     * @return void
      */
-    public function sendMessage(NotificationDto $notification, string $fcmToken = ''): mixed
+    public function sendMessage(CloudMessagingMessage $notification, string $fcmToken = ''): void
     {
         $this->validateConfig();
 
@@ -87,7 +87,7 @@ class CloudMessagingService
         }
 
         $data = [
-            'validate_only' => $notification->debug ?? false,
+            'validate_only' => true,
             'message' => [
                 'token' => $fcmToken,
                 'notification' => [
@@ -102,6 +102,11 @@ class CloudMessagingService
             ->withHeader('Accept', 'application/json')
             ->withToken($authToken);
 
-        return $client->post($this->pushUrl, $data);
+        $response = $client->post($this->pushUrl, $data);
+        if ($response->successful()) {
+            Log::info('Send Push Notification Successful.', $response->json());
+        }
+
+        Log::warning('Send Push Notification Failed.', $response->json());
     }
 }
