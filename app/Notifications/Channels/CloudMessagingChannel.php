@@ -12,6 +12,12 @@ class CloudMessagingChannel
         //
     }
 
+    /**
+     * Send message using service
+     * 
+     * @param object $notifiable
+     * @param \Illuminate\Notifications\Notification $notification
+     */
     public function send(object $notifiable, Notification $notification): void
     {
         $token = $notifiable->routeNotificationFor('CloudMessaging', $notification);

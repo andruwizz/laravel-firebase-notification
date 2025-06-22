@@ -70,10 +70,11 @@ class CloudMessagingService
      * 
      * @param \App\Notifications\Messages\CloudMessagingMessage $notification
      * @param string $fcmToken
+     * @param bool $debug
      * 
-     * @return void
+     * @return bool
      */
-    public function sendMessage(CloudMessagingMessage $notification, string $fcmToken = ''): void
+    public function sendMessage(CloudMessagingMessage $notification, string $fcmToken = '', bool $debug = false): bool
     {
         $this->validateConfig();
 
@@ -87,7 +88,7 @@ class CloudMessagingService
         }
 
         $data = [
-            'validate_only' => true,
+            'validate_only' => $debug,
             'message' => [
                 'token' => $fcmToken,
                 'notification' => [
@@ -105,8 +106,10 @@ class CloudMessagingService
         $response = $client->post($this->pushUrl, $data);
         if ($response->successful()) {
             Log::info('Send Push Notification Successful.', $response->json());
+            return true;
         }
 
         Log::warning('Send Push Notification Failed.', $response->json());
+        return false;
     }
 }
