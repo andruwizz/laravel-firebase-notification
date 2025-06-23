@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthenticationController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,5 +13,7 @@ Route::group(['as' => 'api.'], function () {
 
         Route::post('subscription', [SubscriptionController::class, 'store'])->name('subscription.store');
         Route::delete('subscription', [SubscriptionController::class, 'destroy'])->name('subscription.destroy');
+
+        Route::post('notification', [NotificationController::class, 'store'])->name('notification.store');
     });
 });
