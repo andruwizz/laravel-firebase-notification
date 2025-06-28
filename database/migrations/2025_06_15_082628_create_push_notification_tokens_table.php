@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('push_notification_tokens', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('user_id');
+            $table->uuid('id');
+            $table->morphs('notifiable');
             $table->string('token');
             $table->timestamps();
         });

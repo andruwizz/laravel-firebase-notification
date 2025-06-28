@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SubscriptionRequest;
-use App\Models\PushNotificationToken;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Auth;
@@ -18,15 +18,19 @@ class SubscriptionController extends Controller
      * 
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(SubscriptionRequest $request): JsonResponse
+    public function store(SubscriptionRequest $request): JsonResponse|HttpResponse
     {
         $user = Auth::user();
-        $token = PushNotificationToken::query()->updateOrCreate(
-            ['user_id' => $user->id],
-            ['token' => $request->validated('token')]
-        );
+        if ($user instanceof User) {
+            $token = $user->pushNotificationToken()->updateOrCreate(
+                ['notifiable_id' => $user->id, 'notifiable_type' => User::class],
+                ['token' => $request->validated('token')]
+            );
+            
+            return Response::json($token);
+        }
 
-        return Response::json($token);
+        return HttpResponse::noContent(400);
     }
 
     /**
@@ -37,9 +41,9 @@ class SubscriptionController extends Controller
     public function destroy(): HttpResponse
     {
         $user = Auth::user();
-        PushNotificationToken::query()
-            ->where('user_id', $user->id)
-            ->delete();
+        if ($user instanceof User) {
+            $user->pushNotificationToken()->delete();
+        }
 
         return Response::noContent();
     }

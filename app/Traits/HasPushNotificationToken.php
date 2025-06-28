@@ -4,18 +4,18 @@ namespace App\Traits;
 
 use App\Models\PushNotificationToken;
 use Illuminate\Notifications\Notification;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 trait HasPushNotificationToken
 {
     /**
      * Get notification token for notifiable
      * 
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * @return \Illuminate\Database\Eloquent\Relations\MorphOne
      */
-    public function pushNotificationToken(): HasOne
+    public function pushNotificationToken(): MorphOne
     {
-        return $this->hasOne(PushNotificationToken::class);
+        return $this->morphOne(PushNotificationToken::class, 'notifiable');
     }
 
     /**
